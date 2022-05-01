@@ -1,0 +1,13 @@
+O arquivo "lista.bin" contém uma lista encadeada em disco.
+O arquivo possui 284 bytes.
+	- Os primeiro 4 bytes indicam onde começa o primeiro nodo dentro do arquivo.
+	- Os restantes dos bytes são utilizados para armazenar os nodos.
+Cada nodo em disco ocupa 28 bytes, sendo eles na seguinte ordem:
+	- 4 bytes para indicar se o nodo está lista (1 para sim, 0 para não).
+	- 20 bytes para armazenar caracteres
+	- 4 bytes para indicar o byte onde começa o próximo nodo da lista dentro do arquivo. Se não houver próximo nodo, um valor negativo é usado.
+Note que o arquivo pode conter até 10 nodos. Porém o arquivo tem 9 nodos.
+
+Sua tarefa é escrever a função adiciona em C++17 para localizar um bloco de 28 bytes livres (veja se os 4 primeiros bytes do bloco contém 0) dentro do arquivo X para alocar um novo nodo que contendo um nome Y depois de um nodo que contém o nome Z, onde X, Y, Z parâmetros da função. 
+
+Caso você queira baixar os arquivos e trabalhar localmente, você precisará das bibliotecas OpenSSL (libssl) e Google Test (gtest). Lembre-se se compilar seu código com o parâmetros -lcrypto -lgtest.
