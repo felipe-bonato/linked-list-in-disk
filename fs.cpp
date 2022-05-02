@@ -23,10 +23,12 @@ size_t get_char_str_len(const char* str)
 
 size_t convert_bytes_to_int(const char* bytes)
 {
-    return bytes[3] << 32
-        | bytes[2] << 16
-        | bytes[1] << 8
-        | bytes[0];
+    // Sketchy casting cause we need to shift 24 bits.
+    // If we don't cast, the bits will loop around.
+    return static_cast<uint8_t>(bytes[3]) << 24
+        | static_cast<uint8_t>(bytes[2]) << 16
+        | static_cast<uint8_t>(bytes[1]) << 8
+        | static_cast<uint8_t>(bytes[0]);
 }
 
 /**
@@ -48,7 +50,8 @@ void adiciona(std::string arquivoDaLista, std::string novoNome, std::string depo
     std::ifstream src_file{arquivoDaLista, std::ios::binary};
     std::array<char, 284> nodes{};
     src_file.read(nodes.data(), nodes.size());
-    
+    src_file.close();
+
     size_t cur_node_index = convert_bytes_to_int(&nodes[0]);
 
     // Find node with name depoisDesteNome
@@ -60,13 +63,21 @@ void adiciona(std::string arquivoDaLista, std::string novoNome, std::string depo
         };
         // If true, we found what we wanted
         if(cur_node_name == depoisDesteNome){
-            // Set cur_node_index to the index of the first node after depoisDesteNome
-            cur_node_index = convert_bytes_to_int(&nodes[cur_node_index + NEXT_PTR_OFFSET]);
             break;
         }
         // If not, get next node index
         cur_node_index = convert_bytes_to_int(&nodes[cur_node_index + NEXT_PTR_OFFSET]);
     }
+    // Set cur_node_index to the index of the first node after depoisDesteNome
+    cur_node_index = convert_bytes_to_int(&nodes[cur_node_index + NEXT_PTR_OFFSET]);
+
+    
+    // We now find an empty node
+    /*
+    while(nodes[cur_node_index] != 0){
+        cur_node_index = convert_bytes_to_int(&nodes[cur_node_index + NEXT_PTR_OFFSET]);
+    }
+    */
 }
 
 #endif /* fs_h */
