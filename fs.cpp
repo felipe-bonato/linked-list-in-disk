@@ -10,6 +10,9 @@
 
 #define NAME_OFFSET 4
 #define NEXT_PTR_OFFSET 24
+#define FIRST_NODE_OFFSET 4
+#define NODE_SIZE 28
+#define NODES_AMOUNT 10 // How many nodes are in the file
 
 size_t get_char_str_len(const char* str)
 {
@@ -22,6 +25,7 @@ size_t get_char_str_len(const char* str)
 }
 
 size_t convert_bytes_to_int(const char* bytes)
+size_t findIndexOfNodeWithName(const std::string& name,  std::array<char, 284>& nodes, size_t startIndex)
 {
     // Sketchy casting cause we need to shift 24 bits.
     // If we don't cast, the bits will loop around.
@@ -29,6 +33,22 @@ size_t convert_bytes_to_int(const char* bytes)
         | static_cast<uint8_t>(bytes[2]) << 16
         | static_cast<uint8_t>(bytes[1]) << 8
         | static_cast<uint8_t>(bytes[0]);
+    size_t index = startIndex;
+    while(true){
+        // Convert node c-style char* to std::string
+        std::string curName{
+            &nodes[index + NAME_OFFSET],
+            getCharStrLen(&nodes[index + NAME_OFFSET])
+        };
+        // If true, we found what we wanted
+        if(curName == name){
+            return index;
+        }
+        // If not, get next node index
+        index = nodes[index + NEXT_PTR_OFFSET];
+    }
+}
+
 }
 
 /**
@@ -39,13 +59,12 @@ size_t convert_bytes_to_int(const char* bytes)
 void adiciona(std::string arquivoDaLista, std::string novoNome, std::string depoisDesteNome)
 {
     // Steps:
-    //  1. Read file
-    //  2. Read first 4 bytes
-    //  3. Find node with name depoisDesteNome
-    //  3. Loop:
-    //     If 0, store data
-    //     If 1, skip 20 bytes, read 4 bytes go to the pointer
-    //  4. Store data
+    //  1. Read file into std::array
+    //  2. Read first 4 bytes to find firstNodeIndex
+    //  3. Find index of the node with name depoisDesteNome
+    //  4. Find index of the node after depoisDesteNome
+    //  5. Find index of empty space
+    //  6. Write new node with name novoNome to empty space, and point to next node
 
     std::ifstream src_file{arquivoDaLista, std::ios::binary};
     std::array<char, 284> nodes{};
@@ -54,23 +73,9 @@ void adiciona(std::string arquivoDaLista, std::string novoNome, std::string depo
 
     size_t cur_node_index = convert_bytes_to_int(&nodes[0]);
 
-    // Find node with name depoisDesteNome
-    while(true){
-        // Convert node c-style char* to std::string
-        std::string cur_node_name{
-            &nodes[cur_node_index + NAME_OFFSET],
-            get_char_str_len(&nodes[cur_node_index + NAME_OFFSET])
-        };
-        // If true, we found what we wanted
-        if(cur_node_name == depoisDesteNome){
-            break;
-        }
-        // If not, get next node index
-        cur_node_index = convert_bytes_to_int(&nodes[cur_node_index + NEXT_PTR_OFFSET]);
-    }
-    // Set cur_node_index to the index of the first node after depoisDesteNome
-    cur_node_index = convert_bytes_to_int(&nodes[cur_node_index + NEXT_PTR_OFFSET]);
 
+    size_t firstNodeIndex = nodes[0];
+    size_t nodeDepoisDesteNomeIndex = findIndexOfNodeWithName(depoisDesteNome, nodes, firstNodeIndex);
     
     // We now find an empty node
     /*
