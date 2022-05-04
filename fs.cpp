@@ -42,6 +42,14 @@ size_t findIndexOfNodeWithName(const std::string& name,  std::array<char, 284>& 
     }
 }
 
+size_t findEmptySpaceIndex(std::array<char, 284>& nodes, size_t startIndex)
+{
+    for(size_t i = startIndex; i < NODES_AMOUNT - 1; i += NODE_SIZE){
+        if(nodes[i] == '\0'){
+            return i;
+        }
+    }
+    throw new std::out_of_range("No empty space found in range");
 }
 
 /**
@@ -69,12 +77,7 @@ void adiciona(std::string arquivoDaLista, std::string novoNome, std::string depo
     size_t firstNodeIndex = nodes[0];
     size_t nodeDepoisDesteNomeIndex = findIndexOfNodeWithName(depoisDesteNome, nodes, firstNodeIndex);
     
-    // We now find an empty node
-    /*
-    while(nodes[cur_node_index] != 0){
-        cur_node_index = convert_bytes_to_int(&nodes[cur_node_index + NEXT_PTR_OFFSET]);
-    }
-    */
+    size_t emptySpaceIndex = findEmptySpaceIndex(nodes, FIRST_NODE_OFFSET);
 }
 
 #endif /* fs_h */
