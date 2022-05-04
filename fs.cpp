@@ -14,7 +14,7 @@
 #define NODE_SIZE 28
 #define NODES_AMOUNT 10 // How many nodes are in the file
 
-size_t get_char_str_len(const char* str)
+size_t getCharStrLen(const char* str)
 {
     // If char* is 20 bytes, this will break.
     size_t len = 0;
@@ -24,15 +24,8 @@ size_t get_char_str_len(const char* str)
     return len;
 }
 
-size_t convert_bytes_to_int(const char* bytes)
 size_t findIndexOfNodeWithName(const std::string& name,  std::array<char, 284>& nodes, size_t startIndex)
 {
-    // Sketchy casting cause we need to shift 24 bits.
-    // If we don't cast, the bits will loop around.
-    return static_cast<uint8_t>(bytes[3]) << 24
-        | static_cast<uint8_t>(bytes[2]) << 16
-        | static_cast<uint8_t>(bytes[1]) << 8
-        | static_cast<uint8_t>(bytes[0]);
     size_t index = startIndex;
     while(true){
         // Convert node c-style char* to std::string
@@ -65,14 +58,13 @@ void adiciona(std::string arquivoDaLista, std::string novoNome, std::string depo
     //  4. Find index of the node after depoisDesteNome
     //  5. Find index of empty space
     //  6. Write new node with name novoNome to empty space, and point to next node
+    //  7. Go back and change the next of depoisDesteNome to the new node
+    //  8. Store data back into file
 
-    std::ifstream src_file{arquivoDaLista, std::ios::binary};
+    std::ifstream srcFile{arquivoDaLista, std::ios::binary};
     std::array<char, 284> nodes{};
-    src_file.read(nodes.data(), nodes.size());
-    src_file.close();
-
-    size_t cur_node_index = convert_bytes_to_int(&nodes[0]);
-
+    srcFile.read(nodes.data(), nodes.size());
+    srcFile.close();
 
     size_t firstNodeIndex = nodes[0];
     size_t nodeDepoisDesteNomeIndex = findIndexOfNodeWithName(depoisDesteNome, nodes, firstNodeIndex);
